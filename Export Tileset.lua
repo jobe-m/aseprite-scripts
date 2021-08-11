@@ -7,13 +7,13 @@ local tileset = lay.tileset
 
 local dlg = Dialog("Export Tileset")
 dlg:file{ id="filename", label="Export to Tilemap file:", save=true, focus=true,
-          filename=app.fs.joinPath(app.fs.filePath(lay.sprite.filename), lay.name .. ".png") }
+          filename=app.fs.joinPath(app.fs.filePath(lay.sprite.filename), "tileset.png") }
  :label{ label="Number of Tiles to be exported", text=tostring(#tileset) }
 
  :separator()
- :number { id="tilemap_cols", label="Number of columns in Tilemap:", text="14" }
+ :number { id="tilemap_cols", label="Number of columns in Tilemap:", text="16" }
  :check { id="ask_overwrite", label="Ask before overwrite existing Tilemap file", selected=true }
- :check { id="tiles_extruded", label="Extrude Tiles in Tilemap", selected=true }
+ :check { id="tiles_extruded", label="Extrude Tiles in Tilemap", selected=false }
  :check { id="keep_sprite_frames", label="Keep generated sprite frames open", selected=false }
  :check { id="open_generated", label="Open generated Tilemap", selected=false }
 
@@ -36,12 +36,16 @@ local newSpr = Sprite(size.width, size.height, lay.sprite.colorMode)
 -- give the new sprite the same palette as the source sprite
 newSpr:setPalette(lay.sprite.palettes[1])
 
--- Copy each tile into a new frame of sprite
-for i = 0, #tileset - 1 do
+-- First copy first tile into sprite frame 1
+local tile = tileset:getTile(0)
+newSpr.cels[1].image = tile
+
+-- Then create new frame and copy each tile into a new frame of sprite
+
+for i = 1, #tileset - 1 do
+  app.command.NewFrame { ["content"]="current" }
   local tile = tileset:getTile(i)
   newSpr.cels[i + 1].image = tile
-  -- Add a new frame
-  app.command.NewFrame { ["content"]="current" }
 end
 
 if app.apiVersion >= 3 then
